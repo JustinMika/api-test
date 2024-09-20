@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configuration CORS pour autoriser uniquement https://test-api-eight-neon.vercel.app
 const corsOptions = {
-  origin: ['*', 'https://test-api-eight-neon.vercel.app/', 'test-api-eight-neon.vercel.app', 'https://test-api-eight-neon.vercel.app']
+  origin: ['https://test-api-eight-neon.vercel.app/', 'test-api-eight-neon.vercel.app', 'https://test-api-eight-neon.vercel.app']
 };
 
 
