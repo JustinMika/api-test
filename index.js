@@ -13,20 +13,19 @@ app.use(express.urlencoded({ extended: true }));
 //   origin: '*'
 // };
 
+// Configuration CORS pour autoriser tous les hôtes, toutes les méthodes et tous les en-têtes
 const corsOptions = {
-  origin: 'https://test-api-eight-neon.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Spécifie les en-têtes autorisés
-  optionsSuccessStatus: 200
+  origin: '*', // Autorise toutes les origines
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Autorise toutes les méthodes
+  allowedHeaders: '*', // Autorise tous les en-têtes
+  optionsSuccessStatus: 200 // Pour compenser les problèmes avec les navigateurs qui ne supportent pas le statut 204
 };
 
-
-// origin: ['https://test-api-eight-neon.vercel.app/', 'test-api-eight-neon.vercel.app', 'https://test-api-eight-neon.vercel.app', 'https://test-api-eight-neon.vercel.app']
 // Appliquer les options CORS à toutes les routes
 app.use(cors(corsOptions));
 
 // Gestion des requêtes OPTIONS (preflight)
-// app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 
 // MD convert to html
@@ -41,58 +40,59 @@ app.get("/", (req, res) => {
 });
 app.post("/test-api", async (req, res) => {
   try {
-    const { message, latitude, longitude } = req.body;
+    // const { message, latitude, longitude } = req.body;
 
-    console.log(latitude + " - " + longitude);
+    // console.log(latitude + " - " + longitude);
 
-    const apiUrl = "https://api.ignitia.cloud/api/basic/v1/forecast/common"; // Remplace par l'URL de ton API
+    // const apiUrl = "https://api.ignitia.cloud/api/basic/v1/forecast/common"; // Remplace par l'URL de ton API
 
-    // Données envoyées par le client
-    const postData = {
-      latitude: latitude,
-      longitude: longitude,
-      date: "2024-09-20",
-      date_interval: {
-        end: "2024-09-24",
-        start: "2024-09-18",
-      },
-    };
+    // // Données envoyées par le client
+    // const postData = {
+    //   latitude: latitude,
+    //   longitude: longitude,
+    //   date: "2024-09-20",
+    //   date_interval: {
+    //     end: "2024-09-24",
+    //     start: "2024-09-18",
+    //   },
+    // };
 
-    // Clé API
-    const apiKey = "db3636f6-d440-42d9-b486-14d35940919a"; // Remplace par ta clé API réelle
+    // // Clé API
+    // const apiKey = "db3636f6-d440-42d9-b486-14d35940919a"; // Remplace par ta clé API réelle
 
-    // Requête à l'API externe avec Axios
-    const response = await axios.post(apiUrl, postData, {
-      headers: {
-        "Content-Type": "application/json",
-        apikey: apiKey, // Ajout de la clé API dans les en-têtes
-      },
-    });
+    // // Requête à l'API externe avec Axios
+    // const response = await axios.post(apiUrl, postData, {
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     apikey: apiKey, // Ajout de la clé API dans les en-têtes
+    //   },
+    // });
 
-    // Retourner la réponse de l'API au client
-    const data = response.data;
+    // // Retourner la réponse de l'API au client
+    // const data = response.data;
 
-    // Extraire la première clé dynamiquement
-    const firstKey = Object.keys(data)[0];
+    // // Extraire la première clé dynamiquement
+    // const firstKey = Object.keys(data)[0];
 
-    // Accéder aux données "daily" sans utiliser explicitement la date
-    const dailyData = data[firstKey].daily;
-    const m = message + " " + dailyData;
+    // // Accéder aux données "daily" sans utiliser explicitement la date
+    // const dailyData = data[firstKey].daily;
+    // const m = message + " " + dailyData;
 
-    const response_openai = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "Hello, you're a helpfull assistante" },
-        { role: "user", content: m },
-      ],
-      temperature: 0,
-      max_tokens: 1000,
-    });
+    // const response_openai = await openai.chat.completions.create({
+    //   model: "gpt-4o-mini",
+    //   messages: [
+    //     { role: "system", content: "Hello, you're a helpfull assistante" },
+    //     { role: "user", content: m },
+    //   ],
+    //   temperature: 0,
+    //   max_tokens: 1000,
+    // });
 
-    // Accéder au contenu du message
-    const content = response_openai.choices[0].message.content;
-    const htmlContent = converter.makeHtml(content);
-    res.status(200).json(htmlContent);
+    // // Accéder au contenu du message
+    // const content = response_openai.choices[0].message.content;
+    // const htmlContent = converter.makeHtml(content);
+    // res.status(200).json(htmlContent);
+    res.status(200).json({htmlContent:"jj"});
   } catch (err) {
     res.status(500).json(err.message);
   }
