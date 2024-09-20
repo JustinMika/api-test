@@ -30,7 +30,7 @@ const openai = new OpenAI({
   apiKey: process.env.api_key,
 });
 app.get("/", (req, res) => {
-  res.json({ message: "Test api v1" });
+  res.json({ message: "Test api v1." });
 });
 app.post("/test-api", async (req, res) => {
   try {
