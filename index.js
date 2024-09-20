@@ -80,6 +80,6 @@ app.post("/test-api", async (req, res) => {
 });
 
 // Start the server on port 3000
-app.listen(3001, () => {
+app.listen(5001, () => {
   console.log("Server is running on port 3000");
 });
