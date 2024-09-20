@@ -8,7 +8,14 @@ const OpenAI = require("openai");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
+// Configuration CORS pour autoriser uniquement https://test-api-eight-neon.vercel.app
+const corsOptions = {
+  origin: 'https://test-api-eight-neon.vercel.app',
+  optionsSuccessStatus: 200 // Pour les anciens navigateurs qui ne supportent pas 204
+};
+
+// Appliquer les options CORS à toutes les routes
+app.use(cors(corsOptions));
 
 // MD convert to html
 const showdown = require("showdown");
