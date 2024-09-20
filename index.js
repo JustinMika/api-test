@@ -13,9 +13,12 @@ const corsOptions = {
   origin: ['https://test-api-eight-neon.vercel.app/', 'test-api-eight-neon.vercel.app', 'https://test-api-eight-neon.vercel.app']
 };
 
-
 // Appliquer les options CORS à toutes les routes
 app.use(cors(corsOptions));
+
+// Gestion des requêtes OPTIONS (preflight)
+app.options('*', cors(corsOptions));
+
 
 // MD convert to html
 const showdown = require("showdown");
