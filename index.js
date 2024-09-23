@@ -9,117 +9,103 @@ const OpenAI = require("openai");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// co figuration cors
-const allowCors = (fn) => async (req, res) => {
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  // another common pattern
-  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-  );
-  if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-  }
-  return await fn(req, res);
-};
-
-const handler = (req, res) => {
-  const d = new Date();
-  res.end(d.toString());
-};
-
-module.exports = allowCors(handler);
-
-// Configuration CORS pour autoriser tout
-app.use(
-  cors({
-    origin: ["*"], // Permet tous les domaines
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Autorise toutes les méthodes HTTP
-    allowedHeaders: ["Content-Type", "Authorization"], // Autorise certains en-têtes comme 'Content-Type' et 'Authorization'
-    exposedHeaders: ["Content-Length", "X-Foo", "X-Bar"], // Facultatif: en-têtes accessibles dans la réponse
-    credentials: true, // Facultatif: autorise les cookies si nécessaire
-  })
-);
-
-// Gestion des requêtes OPTIONS (preflight)
-app.options("*", cors());
+app.use(cors());
 
 // MD convert to html
 const converter = new showdown.Converter();
 
 const openai = new OpenAI({
-  apiKey: process.env.api_key,
+    apiKey: process.env.api_key,
 });
+
 app.get("/", (req, res) => {
-  res.json({ message: "Test api v1." });
+    res.json({ message: "Test api v1." });
 });
-app.post("/test-api", allowCors, async (req, res) => {
-  try {
-    const { message, latitude, longitude } = req.body;
 
-    console.log(latitude + " - " + longitude);
+app.post("/get_data_api", async (req, res) => {
+    try {
+        const { message, latitude, longitude, product, language, techniques } =
+            req.body;
 
-    const apiUrl = "https://api.ignitia.cloud/api/basic/v1/forecast/common"; // Remplace par l'URL de ton API
+        if (message && latitude && longitude && product && language) {
+            const apiUrl =
+                "https://api.ignitia.cloud/api/basic/v1/forecast/common"; // Remplace par l'URL de ton API
 
-    // Données envoyées par le client
-    const postData = {
-      latitude: latitude,
-      longitude: longitude,
-      date: "2024-09-20",
-      date_interval: {
-        end: "2024-09-24",
-        start: "2024-09-18",
-      },
-    };
+            // Données envoyées par le client
+            const today = new Date(); // Date d'aujourd'hui
 
-    // Clé API
-    const apiKey = process.env.key_meteo; // Remplace par ta clé API réelle
+            // Calculer la date de début et de fin de l'intervalle de 7 jours
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - 3); // 3 jours avant aujourd'hui
 
-    // Requête à l'API externe avec Axios
-    const response = await axios.post(apiUrl, postData, {
-      headers: {
-        "Content-Type": "application/json",
-        apikey: apiKey, // Ajout de la clé API dans les en-têtes
-      },
-    });
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + 3); // 3 jours après aujourd'hui
 
-    // Retourner la réponse de l'API au client
-    const data = response.data;
+            const postData = {
+                latitude: latitude,
+                longitude: longitude,
+                date: today.toISOString().split("T")[0], // Format YYYY-MM-DD
+                date_interval: {
+                    start: startDate.toISOString().split("T")[0],
+                    end: endDate.toISOString().split("T")[0],
+                },
+            };
 
-    // Extraire la première clé dynamiquement
-    const firstKey = Object.keys(data)[0];
+            // Clé API
+            const apiKey = "db3636f6-d440-42d9-b486-14d35940919a"; // Remplace par ta clé API réelle
 
-    // Accéder aux données "daily" sans utiliser explicitement la date
-    const dailyData = data[firstKey].daily;
-    const m = message + " " + dailyData;
+            // Requête à l'API externe avec Axios
+            const response = await axios.post(apiUrl, postData, {
+                headers: {
+                    "Content-Type": "application/json",
+                    apikey: apiKey, // Ajout de la clé API dans les en-têtes
+                },
+            });
 
-    const response_openai = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "Hello, you're a helpfull assistante" },
-        { role: "user", content: m },
-      ],
-      temperature: 0,
-      max_tokens: 1000,
-    });
+            // Retourner la réponse de l'API au client
+            const data = response.data;
 
-    // Accéder au contenu du message
-    const content = response_openai.choices[0].message.content;
-    const htmlContent = converter.makeHtml(content);
-    res.status(200).json(htmlContent);
-  } catch (err) {
-    res.status(500).json(err.message);
-  }
+            // Extraire la première clé dynamiquement
+            const firstKey = Object.keys(data)[0];
+
+            // Accéder aux données "daily" sans utiliser explicitement la date
+            const dailyData = data[firstKey].daily;
+            const dd = JSON.stringify(dailyData);
+            let m = message + " " + dd + "  " + language;
+
+            if (techniques) {
+                m = `${message} ${dd} et itinéraires techniques agricoles pour cette culture : ${techniques}. donner le resultat en ${language}.`;
+            }
+            console.log(m);
+
+            const response_openai = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: "Hello, you're a helpfull assistante",
+                    },
+                    { role: "user", content: m },
+                ],
+                temperature: 0,
+                max_tokens: 1000,
+            });
+
+            // Accéder au contenu du message
+            const content = response_openai.choices[0].message.content;
+            const htmlContent = converter.makeHtml(content);
+            res.status(200).json(htmlContent);
+        } else {
+            res.status(200).json({
+                message: "Veuillez remplir tous les champs.",
+            });
+        }
+    } catch (err) {
+        res.status(500).json(err.message);
+    }
 });
 
 // Start the server on port 3000
 app.listen(5001, () => {
-  console.log("Server is running on port 3000");
+    console.log("Server is running http://localhost:5001 on port 5001");
 });
