@@ -52,7 +52,7 @@ app.post("/test-api", async (req, res) => {
     };
 
     // Clé API
-    const apiKey = "db3636f6-d440-42d9-b486-14d35940919a"; // Remplace par ta clé API réelle
+    const apiKey = process.env.key_meteo; // Remplace par ta clé API réelle
 
     // Requête à l'API externe avec Axios
     const response = await axios.post(apiUrl, postData, {
