@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // Configuration CORS pour autoriser tout
 app.use(
   cors({
-    origin: ["*", "https://test-api-eight-neon.vercel.app"], // Permet tous les domaines
+    origin: ["*"], // Permet tous les domaines
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Autorise toutes les méthodes HTTP
     allowedHeaders: ["Content-Type", "Authorization"], // Autorise certains en-têtes comme 'Content-Type' et 'Authorization'
     exposedHeaders: ["Content-Length", "X-Foo", "X-Bar"], // Facultatif: en-têtes accessibles dans la réponse
